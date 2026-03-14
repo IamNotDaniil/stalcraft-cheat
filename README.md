@@ -1,4 +1,4 @@
-# STALCRAFT X ULTIMATE CHEAT
+# STALCRAFT X ULTIMATE CHEAT - Termenal-edition
 
 ![Version](https://img.shields.io/badge/version-3.0-green)
 ![Platform](https://img.shields.io/badge/platform-Linux-red)
