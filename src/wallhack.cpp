@@ -41,23 +41,23 @@ namespace wallhack {
         root = XRootWindow(display, DefaultScreen(display));
         
         // Ищем по имени
-        Window ret = XNone;
         if (XQueryTree(display, root, &root, &parent, &children, &nchildren)) {
             for (unsigned int i = 0; i < nchildren; i++) {
                 char* name = nullptr;
                 if (XFetchName(display, children[i], &name) && name) {
                     if (strstr(name, "STALCRAFT") || strstr(name, "stalcraft") || strstr(name, "Stalcraft")) {
                         std::cout << "Найдено окно игры: " << name << "\n";
-                        ret = children[i];
+                        Window ret = children[i];
                         XFree(name);
-                        break;
+                        XFree(children);
+                        return ret;
                     }
                     XFree(name);
                 }
             }
             XFree(children);
         }
-        return ret;
+        return 0; // None = 0
     }
 
     void update_window_position() {
@@ -146,10 +146,11 @@ namespace wallhack {
     }
 
     bool world_to_screen(const Vector3& world, int& screen_x, int& screen_y) {
-        // ВРЕМЕННАЯ ЗАГЛУШКА - нужно найти view matrix
-        // Пока рисуем в центре экрана для теста
-        screen_x = game_width / 2;
-        screen_y = game_height / 2;
+        // Заглушка - координаты не используются
+        static int offset = 0;
+        offset = (offset + 1) % 200;
+        screen_x = game_width / 2 + offset - 100;
+        screen_y = game_height / 2 + offset - 100;
         return true;
     }
 
@@ -188,7 +189,7 @@ namespace wallhack {
                 
                 memory::read_memory(addr + g_team_offset, &p.team, sizeof(p.team));
                 
-                // Разделяем на игроков, мобов и артефакты по здоровью/команде
+                // Разделяем на игроков, мобов и артефакты
                 if (p.team == 1) players.push_back(p); // игроки
                 else if (p.health > 0 && p.health < 20) artifacts.push_back({addr, p.body}); // артефакты
                 else mobs.push_back({addr, p.body}); // мобы
