@@ -29,8 +29,8 @@
 ## 🛠 Установка
 
 ```bash
-git clone https://github.com/iamnotdaniil/stalcraft-ultimate.git
-cd stalcraft-ultimate
+git clone https://github.com/IamNotDaniil/stalcraft-cheat.git
+cd stalcraft-cheat
 mkdir build && cd build
 cmake ..
 make -j$(nproc)
