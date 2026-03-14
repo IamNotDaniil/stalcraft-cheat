@@ -1,18 +1,36 @@
-# Stalcraft X Cheat
+# STALCRAFT X ULTIMATE CHEAT
 
-External cheat for Stalcraft X (Linux/Proton) with:
-- Aimbot (FOV, smooth, bone selection)
-- Triggerbot
-- No Recoil
-- Silent Aim
-- Overlay menu (ImGui + GLFW)
-- Pattern scanner for automatic offset finding
+![Version](https://img.shields.io/badge/version-3.0-green)
+![Platform](https://img.shields.io/badge/platform-Linux-red)
+![Status](https://img.shields.io/badge/status-anticheat_bypassed-success)
 
-## Dependencies
-- OpenGL, GLEW, GLFW (X11), X11, ImGui (included)
+## 🚀 Функционал
 
-## Build
+### 📡 ESP (Радар)
+- Отображение всех игроков в терминале
+- Цветовая индикация здоровья (🔴 >80, 🟡 60-80, 🟢 <60)
+- Компас с направлением на игрока
+- 2D радар с видом сверху
+- Дистанция до цели
+
+### 🎯 Aimbot
+- Автоматическое наведение на цель
+- Плавное прицеливание (Smooth)
+- Настраиваемый FOV (поле зрения)
+- Выбор кости для наведения (голова/тело/ноги)
+- Проверка видимости цели
+- Фильтр по команде
+
+### 🔫 No Recoil
+- Полное подавление отдачи
+- Работает с любым оружием
+- Не детектится античитом
+
+## 🛠 Установка
+
 ```bash
+git clone https://github.com/iamnotdaniil/stalcraft-ultimate.git
+cd stalcraft-ultimate
 mkdir build && cd build
 cmake ..
 make -j$(nproc)

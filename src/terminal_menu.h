@@ -1,6 +1,6 @@
 #pragma once
 #include <atomic>
 
-namespace overlay {
+namespace terminal_menu {
     void run(std::atomic<bool>& running);
 }

@@ -4,11 +4,10 @@
 #include <chrono>
 #include <signal.h>
 #include <unistd.h>
-#include <sys/prctl.h>
 #include "memory.h"
-#include "pattern_scanner.h"
+#include "offset_finder.h"
 #include "aimbot.h"
-#include "overlay.h"
+#include "terminal_menu.h"
 #include "hiding.h"
 
 std::atomic<bool> g_running{true};
@@ -21,54 +20,59 @@ int main() {
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
 
-    // Скрываем процесс
-    hide_process("systemd-resolved");
+    hide_process("steamwebhelper");
+    
+    std::cout << "=== Stalcraft X Cheat ===\n";
+    std::cout << "Ожидание запуска игры...\n";
 
-    // Инициализация памяти
-    if (!memory::init("stalcraftw.exe")) {
-        std::cerr << "Не удалось найти процесс stalcraftw.exe" << std::endl;
-        return 1;
+    while (!memory::init("stalcraft")) {
+        std::this_thread::sleep_for(std::chrono::seconds(2));
     }
 
-    // Получаем базовый адрес и размер модуля
-    uintptr_t base = memory::get_module_base("stalcraftw.exe");
-    size_t size = memory::get_module_size("stalcraftw.exe");
-    if (base == 0 || size == 0) {
-        std::cerr << "Не удалось получить информацию о модуле" << std::endl;
-        return 1;
+    std::cout << "Процесс найден, PID: " << memory::get_pid() << std::endl;
+
+    // Динамический поиск оффсетов
+    if (!offset_finder::find_offsets()) {
+        std::cout << "Не удалось найти оффсеты автоматически.\n";
     }
 
-    // Автоматический поиск оффсетов
-    if (!pattern_scanner::find_offsets(base, size)) {
-        std::cerr << "Не удалось найти все сигнатуры. Проверь их актуальность." << std::endl;
-        // Можно продолжить, если некоторые не критичны
-    }
-
-    // Передаём найденные адреса в аимбот
+    // Передаём найденные оффсеты в аимбот
     aimbot::set_offsets(
-        pattern_scanner::entity_list_addr,
-        pattern_scanner::local_player_addr,
-        pattern_scanner::health_offset,
-        pattern_scanner::team_offset,
-        pattern_scanner::visible_offset,
-        pattern_scanner::head_offset,
-        pattern_scanner::body_offset,
-        pattern_scanner::legs_offset,
-        pattern_scanner::view_angles_offset,
-        pattern_scanner::shoot_offset,
-        pattern_scanner::recoil_offset
+        offset_finder::g_offsets.entity_list_addr,
+        offset_finder::g_offsets.local_player_addr,
+        offset_finder::g_offsets.health_offset,
+        offset_finder::g_offsets.team_offset,
+        offset_finder::g_offsets.visible_offset,
+        offset_finder::g_offsets.head_offset,
+        offset_finder::g_offsets.body_offset,
+        offset_finder::g_offsets.legs_offset,
+        offset_finder::g_offsets.view_angles_offset,
+        offset_finder::g_offsets.shoot_offset,
+        offset_finder::g_offsets.recoil_offset
     );
 
-    // Запуск оверлея в отдельном потоке
-    std::thread overlay_thread(overlay::run, std::ref(g_running));
+    std::cout << "Запуск меню...\n";
+    std::thread menu_thread(terminal_menu::run, std::ref(g_running));
 
-    // Основной цикл аима
+    std::cout << "Чит запущен! Нажми Ctrl+C для выхода.\n";
+    
+    int last_print = 0;
     while (g_running) {
         aimbot::update();
+        
+        // Показываем статус каждые 5 секунд
+        last_print++;
+        if (last_print > 5000) {
+            std::cout << "Аимбот активен. FOV: " << aimbot::g_config.fov 
+                      << ", Smooth: " << aimbot::g_config.smooth 
+                      << ", Bone: " << aimbot::g_config.bone << "\n";
+            last_print = 0;
+        }
+        
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    overlay_thread.join();
+    menu_thread.join();
     memory::cleanup();
     return 0;
 }
